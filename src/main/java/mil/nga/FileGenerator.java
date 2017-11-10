@@ -7,6 +7,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Properties;
 
+import mil.nga.interfaces.PDFMergeI;
 import mil.nga.util.FileUtils;
 import mil.nga.util.URIUtils;
 
@@ -20,7 +21,7 @@ import org.slf4j.LoggerFactory;
  * 
  * @author L. Craig Carpenter
  */
-public class FileGenerator implements FileGeneratorI {
+public class FileGenerator implements PDFMergeI {
 
     /**
      * Static logger for use throughout the class.
@@ -45,7 +46,7 @@ public class FileGenerator implements FileGeneratorI {
      */
     public FileGenerator(Properties props) {
         if (props != null) {
-            setStagingArea(props.getProperty(STAGING_AREA_PROPERTY));
+            setStagingArea(props.getProperty(STAGING_DIRECTORY_PROPERTY));
             setDefaultOutputFile(props.getProperty(OUTPUT_FILE_PROPERTY));
         }
     }

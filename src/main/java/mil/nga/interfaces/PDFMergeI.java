@@ -59,5 +59,32 @@ public interface PDFMergeI {
      */
     public static final String STAGING_DIRECTORY_BASE_PROPERTY = 
             "mergePDF.staging_directory_base";
-
+    
+    /**
+     * Length of unique token utilized in the construction of a unique
+     * staging area for output files. 
+     */
+    public static final int TOKEN_LENGTH = 8;
+    
+    /**
+     * Default directory prefix.
+     */
+    public static final String PREFIX = "nga";
+    
+    /**
+     * Allows developers to change the default output file name.
+     */
+    public static final String OUTPUT_FILE_PROPERTY = 
+            "mergePDF.default_output_filename";
+    
+    /**
+     * The default output file name.
+     */
+    public static final String DEFAULT_OUTPUT_FILE_NAME = 
+            "merged.pdf";
+    
+    /**
+     * Default extension for PDF files.
+     */
+    public static final String PDF_FILE_EXTENSION = ".pdf";
 }
