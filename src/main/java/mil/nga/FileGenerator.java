@@ -1,15 +1,22 @@
 package mil.nga;
 
-import java.io.File;
-import java.net.UnknownHostException;
+import java.io.IOException;
+import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Properties;
 
 import mil.nga.util.FileUtils;
+import mil.nga.util.URIUtils;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
+ * Class containing the logic required to generate the required directories 
+ * and output file names which will be used to store the output merged 
+ * PDF file.
  * 
  * @author L. Craig Carpenter
  */
@@ -18,10 +25,17 @@ public class FileGenerator implements FileGeneratorI {
     /**
      * Static logger for use throughout the class.
      */
-    static final Logger LOG = LoggerFactory.getLogger(FileGenerator.class);
+    static final Logger LOGGER = LoggerFactory.getLogger(FileGenerator.class);
     
-    private String _stagingArea       = null;
-    private String _defaultOutputFile = null;
+    /**
+     * The staging area in which output individual merge jobs will be stored.
+     */
+    private URI stagingArea = null;
+    
+    /**
+     * User-supplied filename to use when creating the output merged PDF.
+     */
+    private String defaultOutputFile = null;
     
     /**
      * Default constructor used to extract default properties from the input
@@ -36,29 +50,6 @@ public class FileGenerator implements FileGeneratorI {
         }
     }
     
-    
-    /**
-     * Obtain the host name from the server hosting the application.  If the
-     * actual host name cannot be retrieved, the string localhost is returned.
-     * 
-     * @return A host name
-     */
-    public static String getHostname() {
-        String method   = "getHostname() - ";
-        String hostname = "localhost";
-        try {
-            hostname = java.net.InetAddress.getLocalHost().getHostName();
-        }
-        catch (UnknownHostException uhe) {
-            LOG.warn(method 
-                    + "Unable to obtain the hostname.  Exception ["
-                    + uhe.getMessage()
-                    + "].");
-        }
-        return FileUtils.removeExtensions(hostname.trim());
-    }
-    
-    
     /**
      * Calculate the name for a directory that will be used to store the 
      * output archive files.  Important note:  This method will return a 
@@ -66,13 +57,12 @@ public class FileGenerator implements FileGeneratorI {
      *   
      * @return A full path to an output directory.
      */
-    public String getOutputDirectory() {
+    public URI getOutputDirectory() throws IOException {
         
-        String        method  = "getOutputDirectory() - ";
         StringBuilder sb      = new StringBuilder();
         String        pathSep = System.getProperty("file.separator");
         
-        sb.append(getStagingArea());
+        sb.append(getStagingArea().toString());
         if (!sb.toString().endsWith(pathSep)) {
             sb.append(pathSep);
         }
@@ -80,42 +70,40 @@ public class FileGenerator implements FileGeneratorI {
         // Construct the unique directory name
         sb.append(PREFIX);
         sb.append("_");
-        sb.append(getHostname());
+        sb.append(FileUtils.getHostName().trim());
         sb.append("_");
         sb.append(getUniqueToken());
         
-        // Make sure the directory is unique
-        File file = new File(sb.toString());
-        if (file.exists()) {
+        // If the calculated directory exists, recursively call 
+        // getOutputDirectory() until we find one that doesn't exist.
+        URI  dirPathUri = URIUtils.getInstance().getURI(sb.toString());
+        Path dirPath    = Paths.get(dirPathUri);
+        if (Files.exists(dirPath)) {
             return getOutputDirectory();
         }
         else {
-            // Updated to ensure directory permissions are wide open
-            file.setExecutable(true, false);
-            file.setReadable(true, false);
-            file.setWritable(true, false);
-            file.mkdir();
-            if (!file.exists()) {
-                LOG.error(method
-                        + "Unable to create the output archive directory.  "
-                        + "Attempted to create [" 
-                        + file.getAbsolutePath()
-                        + "].");
+            Files.createDirectory(dirPath);
+            if (!Files.exists(dirPath)) {
+                LOGGER.error("Unable to create the output archive directory.  "
+                        + "Attempted to create [ " 
+                        + dirPathUri.toString()
+                        + " ].");
             }
         }
-        return sb.toString();
+        return dirPathUri;
     }
     
     /**
      * Calculate a regular expression that can be used to search for 
-     * bundler staging directories.  
+     * PDFMerge staging directories.  
+     * 
      * @return A REGEX used to search for staging directories.
      */
     public static String getRegEx() {
         StringBuilder sb = new StringBuilder();
         sb.append(PREFIX);
         sb.append("_");
-        sb.append(getHostname());
+        sb.append(FileUtils.getHostName());
         sb.append("_");
         sb.append("[A-Z0-9]{");
         sb.append(2*TOKEN_LENGTH);
@@ -129,19 +117,19 @@ public class FileGenerator implements FileGeneratorI {
      * @param outputFile The suggested name of the output file.
      * @return The full path to the target output file.
      */
-    public String getOutputPath(String outputFile) {
+    public URI getOutputPath(String outputFile) throws IOException {
         
         StringBuilder sb      = new StringBuilder();
         String        pathSep = System.getProperty("file.separator");
         
         // Append the temporary output directory
-        sb.append(getOutputDirectory());
+        sb.append(getOutputDirectory().toString());
         if (!sb.toString().endsWith(pathSep)) {
             sb.append(pathSep);
         }
         
         if ((outputFile == null) || (outputFile.isEmpty())) {
-            sb.append(DEFAULT_OUTPUT_FILE_NAME);
+            sb.append(getDefaultOutputFile());
         }
         else {
             if (outputFile.endsWith(PDF_FILE_EXTENSION)) {
@@ -153,32 +141,42 @@ public class FileGenerator implements FileGeneratorI {
                         PDF_FILE_EXTENSION);
             }
         }
-        return sb.toString();
+        return URIUtils.getInstance().getURI(sb.toString());
     }
     
+    /**
+     * Getter method for the default output file name.
+     * @return The default output file name.
+     */
+    public String getDefaultOutputFile() {
+    	return defaultOutputFile;
+    }
     
     /**
      * Getter method for the location of the staging area to be used.
+     * 
      * @return The default staging area. 
      */
-    public String getStagingArea() {
-        return _stagingArea;
+    public URI getStagingArea() {
+        return stagingArea;
     }
     
     
     /**
      * Setter method for the location of the staging area to be used.
+     * 
      * @param value The default staging area. 
      */
     public void setStagingArea(String value) {
         if ((value == null) || (value.isEmpty())) {
-            _defaultOutputFile = System.getProperty("java.io.tmpdir");
+        	stagingArea = 
+            		URIUtils.getInstance().getURI(
+            				System.getProperty("java.io.tmpdir"));
         }
         else {
-            _stagingArea = value;
+        	stagingArea = URIUtils.getInstance().getURI(value);
         }
     }
-    
     
     /**
      * Setter method for the default output file.
@@ -186,13 +184,12 @@ public class FileGenerator implements FileGeneratorI {
      */
     public void setDefaultOutputFile(String value) {
         if ((value == null) || (value.isEmpty())) {
-            _defaultOutputFile = DEFAULT_OUTPUT_FILE_NAME;
+            defaultOutputFile = DEFAULT_OUTPUT_FILE_NAME;
         }
         else {
-            _defaultOutputFile = value;
+            defaultOutputFile = value;
         }
     }
-    
     
     /**
      * Calculate a unique token used to make directories and/or filenames 

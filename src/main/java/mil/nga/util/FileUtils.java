@@ -2,10 +2,52 @@ package mil.nga.util;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.Random;
 import java.util.regex.Pattern;
 
 public class FileUtils {
+    
+    /**
+     * Get the host name.
+     * 
+     * Updated:  InetAddress.getLocalHost().getHostName() does a DNS query for
+     * the local IP address.  The returned value is the first PTR record.  The 
+     * problem is that if you have multiple PTR records, the first one returned
+     * need not be the same every time.  This turned out to be a problem on the 
+     * classified networks in that nearly every time this method was called, it
+     * received a different host name.  Method was restructured to first use 
+     * the value of the HOSTNAME environment variable, and then if that doesn't
+     * work, then use the DNS lookup results.
+     * 
+     * @return The host name.
+     */
+    public static String getHostName() {
+        
+        String host = null;
+        
+        // This environment variable is for linux/unix
+        host = System.getenv("HOSTNAME");
+        if ((host == null) || (host.isEmpty())) { 
+            // If we're running on Windows the following environment 
+            // variable will be set
+            host = System.getenv("COMPUTERNAME");
+            if ((host == null) || (host.isEmpty())) {
+                // Finally, try the portable method.  Know that results may be
+                // questionable.
+                try {
+                    host = InetAddress.getLocalHost().getHostName();
+                }
+                catch (UnknownHostException uhe) { }
+            }
+        }
+        // If it's still empty just set it to "unavailable"
+        if ((host == null) || (host.isEmpty())) { 
+            host = "unavailable";
+        }
+        return host;
+    }
     
     /**
      * Delete method that will recursively delete the input file.  If the file

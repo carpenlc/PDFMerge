@@ -1,12 +1,21 @@
 package mil.nga;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Properties;
+import java.util.ArrayList;
 import java.util.List;
 
 import mil.nga.exceptions.PDFException;
+import mil.nga.util.URIUtils;
 
 import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.io.MemoryUsageSetting;
 import org.apache.pdfbox.multipdf.PDFMergerUtility;
 
 import org.slf4j.Logger;
@@ -26,7 +35,7 @@ public class PDFFactory extends FileGenerator {
     /**
      * Static logger for use throughout the class.
      */
-    Logger LOG = LoggerFactory.getLogger(PDFFactory.class);
+    private final Logger LOG = LoggerFactory.getLogger(PDFFactory.class);
     
     /**
      * Default constructor requiring clients to supply a system properties 
@@ -37,7 +46,6 @@ public class PDFFactory extends FileGenerator {
         super(props);
     }
     
-    
     /**
      * Test a client-supplied filename to ensure it is a valid PDF before
      * adding the file to the merge operation.
@@ -45,97 +53,98 @@ public class PDFFactory extends FileGenerator {
      * @param filename Full path to a candidate file.
      * @return Boolean indicating whether the input file is a valid PDF
      */
-    public boolean isValidPDF (String filename) {
+    public boolean isValidPDF (URI pdfFile) {
         
-        String     method    = "validPDF() - ";
         boolean    valid     = false;
         long       startTime = System.currentTimeMillis();
-        PDDocument pdf       = null;
         
-        if ((filename != null) && (!filename.isEmpty())) {
-            try {
-                pdf = PDDocument.load(filename);
+        if (pdfFile != null) {
+        	
+        	Path p = Paths.get(pdfFile);
+            
+        	try (InputStream is = Files.newInputStream(p);
+            		PDDocument pdf = PDDocument.load(is)) {
                 valid = true;
             }
             catch (IOException ioe) {
                 LOG.warn("IOException encountered while checking the validity "
                         + "of file [ "
-                        + filename
+                        + pdfFile.toString()
                         + " ].  Error message [ "
                         + ioe.getMessage()
                         + " ].  Target file is not a valid PDF.");
             }
-            finally {
-                if (pdf != null) {
-                    try { pdf.close(); } catch (Exception e) {}
-                }
+            
+        	if (LOG.isDebugEnabled()) {
+                LOG.debug("Validation of file [ "
+                        + pdfFile.toString() 
+                        + " ] completed in [ "
+                        + (System.currentTimeMillis() - startTime)
+                        + " ] ms, result was [ "
+                        + valid 
+                        + " ].");
             }
+            
         }
         else {
-            LOG.warn(method + "Input filename is null or empty.");
+            LOG.warn("Input filename is null or empty.");
         }
         
-        if (LOG.isDebugEnabled()) {
-            LOG.debug(method 
-                    + "Validation of file [ "
-                    + filename 
-                    + " ] completed in [ "
-                    + (System.currentTimeMillis() - startTime)
-                    + " ] ms, result was [ "
-                    + valid 
-                    + " ].");
-        }
+
         return valid;
     }
     
     
     /**
      * 
-     * @param inputFiles
-     * @param outputFileName
+     * @param inputFiles List of input PDF files to merge.
+     * @param outputFileName The name of the output PDF file to create.
+     * @return The URI of the output merged PDF file (may be null).
      */
-    public String merge (List<String> inputFiles, String outputFileName) 
+    public URI merge (List<String> inputFiles, String outputFileName) 
             throws PDFException {
-        
-        String           method     = "merge() - ";
-        String           outputPath = super.getOutputPath(outputFileName);
-        PDFMergerUtility pmut       = new PDFMergerUtility();
-        int              validPDFs  = 0;
+    	
+        URI               output      = null;
+        PDFMergerUtility  pmut        = new PDFMergerUtility();
+        List<InputStream> pdfsToMerge = new ArrayList<InputStream>();
+        OutputStream      os          = null;
         
         if ((inputFiles != null) && (inputFiles.size() > 0)) {
             
             try {
-                
+            	
                 long validateStartTime = System.currentTimeMillis();
+                
+                // Ensure the client-supplied list of PDF files is valid.
                 for (String pdfFile : inputFiles) {
-                    if (isValidPDF(pdfFile)) {
-                        validPDFs++;
-                        pmut.addSource(pdfFile);
+                	URI uri = URIUtils.getInstance().getURI(pdfFile);
+                    if (isValidPDF(uri)) {
+                        pdfsToMerge.add(Files.newInputStream(Paths.get(uri)));
                     }
                 }
                 
                 // Log the time it took to validate the PDF files.
                 if (LOG.isDebugEnabled()) {
-                    LOG.debug(method 
-                            + "PDF validation operation completed in [ "
+                    LOG.debug("PDF validation operation completed in [ "
                             + (System.currentTimeMillis() - validateStartTime)
                             + " ] ms.");
                 }
                 
-                if (validPDFs >= 1) {
+                if (pdfsToMerge.size() >= 1) {
                     
                     long mergeStartTime = System.currentTimeMillis();
-                    LOG.info(method 
-                            + "Merging specified PDFs into output file [ "
-                            + outputPath
+                    output = super.getOutputPath(outputFileName);
+                    LOG.info("Merging specified PDFs into output file [ "
+                            + output.toString()
                             + " ].");
-                    pmut.setDestinationFileName(outputPath);
-                    pmut.mergeDocuments();
+                    os = Files.newOutputStream(Paths.get(output));
+                    pmut.addSources(pdfsToMerge);
+                    pmut.setDestinationStream(os);
+                    pmut.mergeDocuments(MemoryUsageSetting.setupMainMemoryOnly());
                     
                     // Log the time it took to merge the PDF documents.
                     if (LOG.isDebugEnabled()) {
-                        LOG.debug(method 
-                                + "PDF merge operation completed in [ "
+                        LOG.debug("PDF merge operation completed in [ "
                                 + (System.currentTimeMillis() - mergeStartTime)
                                 + " ] ms.");
                     }
@@ -144,8 +153,7 @@ public class PDFFactory extends FileGenerator {
                     String msg = "The validation of the input PDF files resulted in "
                             + "less than one valid PDF for merging.  Processing "
                             + "will not continue.";
-                    LOG.error(method 
-                            + "Exception to be thrown to the client [ "
+                    LOG.error("Exception to be thrown to the client [ "
                             + msg
                             + " ].");
                     throw new PDFException (msg);
@@ -155,32 +163,39 @@ public class PDFFactory extends FileGenerator {
             catch (IOException ioe) {
                 String msg = "Unexpected IOException encountered while "
                         + "attempting to generate the output merged PDF file."
-                        + "Target file was [ "
-                        + outputPath 
-                        + " ] error message was [ "
+                        + "  Exception message => [ "
                         + ioe.getMessage() 
                         + " ].";
-                LOG.error(method 
-                        + "Exception to be thrown to the client [ "
+                LOG.error("Exception to be thrown to the client [ "
                         + msg
                         + " ].");
                 throw new PDFException (msg);
             }
+            finally {
+            	// Not sure if the PDFMergerUtility closes the streams so 
+            	// manually close them here.
+            	if (os != null) {
+            		try { os.close(); } catch (Exception e) {}
+            	}
+            	if ((pdfsToMerge != null) && (pdfsToMerge.size() > 0)) {
+            		for (InputStream stream : pdfsToMerge) {
+            			try { stream.close(); } catch (Exception e) {}
+            		}
+            	}
+            }
         }
         else {
             String msg = "There are no input files to merge.";
-            LOG.error(method 
-                    + "Exception to be thrown to the client [ "
+            LOG.error("Exception to be thrown to the client [ "
                     + msg
                     + " ].");
             throw new PDFException(msg);
         }
-        return outputPath;
-        
+        return output;
     }
     
     
-    public String merge (MergeRequest request) throws PDFException {
+    public URI merge (MergeRequest request) throws PDFException {
         return merge(request.getFiles(), request.getFilename());
     }
 }

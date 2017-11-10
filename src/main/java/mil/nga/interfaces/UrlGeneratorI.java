@@ -1,4 +1,4 @@
-package mil.nga;
+package mil.nga.interfaces;
 
 /**
  * Interface file containing constant definitions relevant to the URL 

@@ -1,9 +1,8 @@
 package mil.nga;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Properties;
+import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 import javax.annotation.PostConstruct;
 import javax.servlet.ServletContext;
@@ -13,14 +12,21 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import mil.nga.MergeRequest;
+import mil.nga.FileSystemFactory;
 import mil.nga.exceptions.PDFException;
+import mil.nga.exceptions.PropertiesNotLoadedException;
+import mil.nga.interfaces.PDFMergeI;
+import mil.nga.util.FileUtils;
 
 /**
  * Simple application that will merge PDF documents.
@@ -45,106 +51,100 @@ import mil.nga.exceptions.PDFException;
  * @author L. Craig Carpenter
  */
 @Path("")
-public class PDFMerge {
+public class PDFMerge extends PropertyLoader implements PDFMergeI {
 
     /**
      * Static logger for use throughout the class.
      */
-    Logger LOG = LoggerFactory.getLogger(PDFMerge.class);
-
-    private Properties _pdfMergeProps = new Properties();
+    final Logger LOGGER = LoggerFactory.getLogger(PDFMerge.class);
     
-    public static final String PROPERTIES_FILE_NAME = "pdf_merge.properties";
+    /**
+     * Common header names in which the client CN is inserted
+     */
+    public static final String[] CERT_HEADERS = {
+        "X-SSL-Client-CN",
+        "SSL_CLIENT_S_DN_CN",
+        "SM_USER",
+        "SM_USER_CN"
+    };
     
     /** 
      * Container-injected ServletContext object.
      */
-    @Context ServletContext _context;
+    @Context 
+    ServletContext _context;
     
     /**
-     * Initialization method used to load the system properties.
+     * Default constructor.
      */
-    @PostConstruct 
-    private void init() {
+    public PDFMerge() {
+    	super(PROPERTY_FILE_NAME);
+    }
+
+    /**
+     * Ensure the S3 file system provider is loaded.
+     */
+    @PostConstruct
+    public void init() {
+        // Ensure the S3 file system provider is loaded.
+        FileSystemFactory.getInstance().loadS3Filesystem();
+    }
+    
+    /**
+     * Try a couple of different headers to see if we can get a user 
+     * name for the incoming request.  Most of the time this function 
+     * doesn't actually obtain the user because the AJAX callers do 
+     * not insert the request headers.
+     * 
+     * @param headers HTTP request headers
+     * @return The username if it could be extracted from the headers
+     */
+    public String getUser(HttpHeaders headers) {
         
-        String      method  = "init() - ";
-        String      newLine = System.getProperty("line.separator");
-        InputStream is      = null;
+        String method = "getUser() - ";
+        String user   = null;
         
-        if (LOG.isDebugEnabled()) {
-            LOG.debug(method + "method invoked.");
-        }
-        
-        if (_context != null) {
-            try {
-                
-                is = _context.getResourceAsStream(
-                        "/WEB-INF/" + PROPERTIES_FILE_NAME);
-                _pdfMergeProps.load(is);
-                
-            }
-            catch (IOException ioe) {
-                
-                LOG.error(method 
-                        + "Unexpected IOException encountered while "
-                        + "attempting to load the properties file [ "
-                        + "/WEB-INF/" + PROPERTIES_FILE_NAME
-                        + " ].");
-                _pdfMergeProps = null;
-                
-            }
-            finally {
-                
-                if (is != null) {
-                    try { is.close(); } catch (Exception e) {}
+        if (headers != null) {
+            MultivaluedMap<String, String> map = headers.getRequestHeaders();
+            for (String key : map.keySet()) {
+                for (String header : CERT_HEADERS) {
+                    if (header.equalsIgnoreCase(key)) {
+                        user = map.get(key).get(0);
+                        break;
+                    }
                 }
-                
-            }
-            if (_pdfMergeProps != null) {
-                
-                StringBuilder sb = new StringBuilder();
-                for (String key : _pdfMergeProps.stringPropertyNames()) {
-                    sb.append("  key [ ");
-                    sb.append(key);
-                    sb.append(" ] => value [ ");
-                    sb.append(_pdfMergeProps.getProperty(key));
-                    sb.append(" ]");
-                    sb.append(newLine);
-                }
-                
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug(method 
-                            + "System properties: " 
-                            + newLine
-                            + sb.toString());
-                }
-                
             }
         }
         else {
-            LOG.error(method 
-                    + "The container failed to inject the ServletContext.  "
-                    + "Unable to continue.");
+            LOGGER.warn(method 
+                    + "HTTP request headers are not available.");
         }
+        if ((user == null) || (user.isEmpty())) {
+            user = "unavailable";
+        }
+        return user;
     }
-
     
     /**
-     * Not really of any use.  Added for testing purposes.
-     * @return A hard-coded String object.
+     * Simple method used to determine whether or not the  
+     * application is responding to requests.
      */
     @GET
-    @Path("/info")
-    public String info() {
-        String method = "info() - ";
-        if (LOG.isDebugEnabled()) {
-            LOG.debug(method + "method invoked.");
-        }
-        return new String("PDFMerge application.");
+    @Path("/isAlive")
+    public Response isAlive(@Context HttpHeaders headers) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Application [ ");
+        sb.append(APPLICATION_NAME);
+        sb.append(" ] on host [ ");
+        sb.append(FileUtils.getHostName());
+        sb.append(" ] and called by user [ ");
+        sb.append(getUser(headers));
+        sb.append(" ] is alive!");
+        return Response.status(Status.OK).entity(sb.toString()).build();
     }
     
     /**
-     * Accepts a merge request object (unmarshalled via JAX-B) and generates 
+     * Accepts a merge request object (deserialized via JAX-B) and generates 
      * a merged PDF.  It then returns a JSON response containing a full URL 
      * to be used to download the generated PDF file.
      * 
@@ -156,39 +156,46 @@ public class PDFMerge {
     @Path("/merge")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public UrlHolder merge(MergeRequest request) 
+    public Response merge(MergeRequest request) 
             throws PDFException {
         
-        String    method = "merge() - ";
         UrlHolder holder = new UrlHolder();
         
-        if (LOG.isDebugEnabled()) {
-            LOG.debug(method + "method invoked.");
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("merge() invoked.");
         }
         
-        LOG.info(request.toString());
+        LOGGER.info(request.toString());
         
-        PDFFactory pdfFact = new PDFFactory(_pdfMergeProps);
-        String output = pdfFact.merge(request);
-        
-        if ((output != null) && (!output.isEmpty())) {
-        
-            UrlGenerator urlFact = new UrlGenerator(_pdfMergeProps);
-            String url = urlFact.toURL(output);
-            holder.setURL(url);
-            
+        try {
+        	
+	        PDFFactory pdfFact = new PDFFactory(super.getProperties());
+	        URI output = pdfFact.merge(request);
+	        
+	        if (output != null) {
+	            UrlGenerator urlFact = new UrlGenerator(super.getProperties());
+	            String url = urlFact.toURL(output);
+	            holder.setURL(url);
+	        }
+	        else {
+	            LOGGER.error("The output file returned by the PDFFactory "
+	                    + "object is null or empty.");
+	        	return Response.serverError().build();
+	        }
         }
-        else {
-            LOG.error(method 
-                    + "The output file returned by the PDFFactory object is "
-                    + "null or empty.");
+        catch (PropertiesNotLoadedException pnle) {
+        	LOGGER.error("Unable to load the required properties file [ "
+        			+ PROPERTY_FILE_NAME 
+        			+ " ].  Exception message => [ "
+        			+ pnle.getMessage());
+        	return Response.serverError().build();
         }
-        return holder;
+        return Response.ok(holder, MediaType.APPLICATION_JSON).build();
     }
     
     /**
      * Alternate form of the merge method.  Accepts a merge request object 
-     * (unmarshalled via JAX-B) and generates a merged PDF.  It then returns
+     * (de-serialized via JAX-B) and generates a merged PDF.  It then returns
      * a Response object that forces a download.
      * 
      * @param request An incoming PDF merge request.
@@ -204,41 +211,47 @@ public class PDFMerge {
         
         String method = "mergeAndDownload() - ";
         
-        LOG.info(request.toString());
+        LOGGER.info(request.toString());
         
-        if (LOG.isDebugEnabled()) {
-            LOG.debug(method + "method invoked.");
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(method + "method invoked.");
         }
         
-        PDFFactory pdfFact = new PDFFactory(_pdfMergeProps);
-        String output = pdfFact.merge(request);
-        
-        if ((output != null) && (!output.isEmpty())) {
-            
-            File pdfFile = new File(output);
-            
-            // If the output file exists, start the download.
-            if (pdfFile.exists()) {
-                return Response.ok(pdfFile)
-                        .header("Content-Disposition", 
-                                "attachment; filename=" + pdfFile.getName() + "\"")
-                        .build();
-            }
-            else {
-                LOG.error(method 
-                        + "The output file returned by the PDFFactory object does "
-                        + "not exist.  File specified [ "
-                        + output
-                        + " ].");
-                return Response.serverError().build();
-            }
+        try {
+	        PDFFactory pdfFact = new PDFFactory(super.getProperties());
+	        URI output = pdfFact.merge(request);
+	        
+	        if (output != null) {
+	        	
+	            java.nio.file.Path p = Paths.get(output);
+	            // If the output file exists, start the download.
+	            if (Files.exists(p)) {
+	                return Response.ok(p)
+	                        .header("Content-Disposition", 
+	                                "attachment; filename=" + p.toString() + "\"")
+	                        .build();
+	            }
+	            else {
+	                LOGGER.error("The output file returned by the PDFFactory object "
+	                        + "does not exist.  File specified [ "
+	                        + output
+	                        + " ].");
+	                return Response.serverError().build();
+	            }
+	        }
+	        else {
+	            LOGGER.error(method 
+	                    + "The output file returned by the PDFFactory object is "
+	                    + "null or empty.");
+	            return Response.serverError().build();
+	        }
         }
-        else {
-            LOG.error(method 
-                    + "The output file returned by the PDFFactory object is "
-                    + "null or empty.");
-            return Response.serverError().build();
+        catch (PropertiesNotLoadedException pnle) {
+        	LOGGER.error("Unable to load the required properties file [ "
+        			+ PROPERTY_FILE_NAME 
+        			+ " ].  Exception message => [ "
+        			+ pnle.getMessage());
+        	return Response.serverError().build();
         }
     }
-    
 }
