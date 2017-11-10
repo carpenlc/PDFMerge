@@ -1,0 +1,111 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" 
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>mil.nga.pdfmerge</groupId>
+    <version>1.0.0</version>
+    <artifactId>PDFMerge</artifactId>
+    <packaging>war</packaging>
+
+    <name>PDFMerge</name>
+    <developers>
+        <developer>
+            <id>carpenlc</id>
+            <name>L. Craig Carpenter</name>
+            <email>l.craig.carpenter@gmail.com</email>
+        </developer>
+    </developers>
+
+    <properties>
+        <tomcat.servlet.version>8.0.47</tomcat.servlet.version>
+        <pdfbox.version>2.0.8</pdfbox.version>
+        <fontbox.version>2.0.8</fontbox.version>
+        <pdfbox-app.version>2.0.8</pdfbox-app.version>
+        <pdfbox-tools.version>2.0.8</pdfbox-tools.version>
+        <commons-logging.version>1.2</commons-logging.version>
+        <slf4j.version>1.7.25</slf4j.version>
+        <logback.version>1.2.2</logback.version>
+        <resteasy.version>3.1.4.Final</resteasy.version>
+        <resteasy.initializer.version>3.1.4.Final</resteasy.initializer.version>
+        <resteasy.jackson2.version>3.1.4.Final</resteasy.jackson2.version>
+        <jackson.version>2.8.9</jackson.version>
+
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.apache.tomcat</groupId>
+            <artifactId>tomcat-servlet-api</artifactId>
+            <version>${tomcat.servlet.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.pdfbox</groupId>
+            <artifactId>pdfbox</artifactId>
+            <version>${pdfbox.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.pdfbox</groupId>
+            <artifactId>fontbox</artifactId>
+            <version>${fontbox.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.pdfbox</groupId>
+            <artifactId>pdfbox-app</artifactId>
+            <version>${pdfbox-app.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.pdfbox</groupId>
+            <artifactId>pdfbox-tools</artifactId>
+            <version>${pdfbox-tools.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.resteasy</groupId>
+            <artifactId>resteasy-jaxrs</artifactId>
+            <version>${resteasy.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.resteasy</groupId>
+            <artifactId>resteasy-servlet-initializer</artifactId>
+            <version>${resteasy.initializer.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.resteasy</groupId>
+            <artifactId>resteasy-jackson2-provider</artifactId>
+            <version>3.1.4.Final</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-logging</groupId>
+            <artifactId>commons-logging</artifactId>
+            <version>${commons-logging.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-core</artifactId>
+            <version>${logback.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>${logback.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-access</artifactId>
+            <version>${logback.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>${slf4j.version}</version>
+        </dependency>
+
+    </dependencies>
+
+</project>
