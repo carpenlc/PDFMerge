@@ -8,17 +8,17 @@ package mil.nga.exceptions;
  *
  */
 public class PDFException extends Exception {
-	
-	/**
-	 * Eclipse-generated serialVersionUID
-	 */
-	private static final long serialVersionUID = 5052200290553305343L;
+    
+    /**
+     * Eclipse-generated serialVersionUID
+     */
+    private static final long serialVersionUID = 5052200290553305343L;
 
-	/** 
-	 * Default constructor requiring a message String.
-	 * @param msg Information identifying why the exception was raised.
-	 */
-	public PDFException(String msg) {
-		super(msg);
-	}
+    /** 
+     * Default constructor requiring a message String.
+     * @param msg Information identifying why the exception was raised.
+     */
+    public PDFException(String msg) {
+        super(msg);
+    }
 }

@@ -15,20 +15,20 @@ import javax.ws.rs.ext.Provider;
  */
 @Provider
 public class PDFExceptionHandler 
-		implements ExceptionMapper<PDFException> {
+        implements ExceptionMapper<PDFException> {
 
-	/**
-	 * Convert the Exception to a JAX-RS Response object to return to 
-	 * the caller.
-	 * 
-	 * @return HTML error 400 with a JSON message body.
-	 */
-	@Override
-	public Response toResponse(PDFException exception) {
-		return Response.status(Status.BAD_REQUEST)
-				.entity(new ErrorMessageHolder(exception.getMessage()))
-				.type(MediaType.APPLICATION_JSON).build();
-	}
+    /**
+     * Convert the Exception to a JAX-RS Response object to return to 
+     * the caller.
+     * 
+     * @return HTML error 400 with a JSON message body.
+     */
+    @Override
+    public Response toResponse(PDFException exception) {
+        return Response.status(Status.BAD_REQUEST)
+                .entity(new ErrorMessageHolder(exception.getMessage()))
+                .type(MediaType.APPLICATION_JSON).build();
+    }
 
-	
+    
 }
