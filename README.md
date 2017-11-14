@@ -1,6 +1,6 @@
 # PDFMerge
 Simple web service used to merge a list of PDF files together. The exposed endpoints accept POST requests with a JSON message body in the following format:
-```
+```JSON
 {
     "file_name" : "output_file.pdf",
     "files" : [
@@ -12,7 +12,7 @@ Simple web service used to merge a list of PDF files together. The exposed endpo
 }
 ```
 The PDFMerge utility is also capable of merging data that exists on an S3 filesystem.  In order to leverage S3 the input list of files should specify target files using URI syntax.  Example:
-```
+```JSON
 {
     "file_name" : "output_file.pdf",
     "files" : [
@@ -26,7 +26,7 @@ The PDFMerge utility is also capable of merging data that exists on an S3 filesy
 ## REST Endpoints
 Two separate end-points are provided:
 * **/PDFMerge/rest/merge** endpoint: The code will them merge together the identified files and return a JSON message with a URL link to the output file.  The return message would look like the following:
-```
+```JSON
 { "url" : "https://localhost/path/to/output_file.pdf" }
 ```
 * **/PDFMerge/rest/mergeAndDownload** endpoint:  The code will them merge together the identified files and return the output file as an attachment.  
