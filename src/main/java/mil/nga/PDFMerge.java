@@ -164,30 +164,38 @@ public class PDFMerge extends PropertyLoader implements PDFMergeI {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("merge() invoked.");
         }
-        
-        LOGGER.info(request.toString());
-        
-        try {
-        	
-	        PDFFactory pdfFact = new PDFFactory(super.getProperties());
-	        URI output = pdfFact.merge(request);
+        if (request != null) {
 	        
-	        if (output != null) {
-	            UrlGenerator urlFact = new UrlGenerator(super.getProperties());
-	            String url = urlFact.toURL(output);
-	            holder.setURL(url);
+        	LOGGER.info(request.toString());
+	        RequestArchiveService.getInstance().archiveRequest(request);
+	        
+	        try {
+	        	
+		        PDFFactory pdfFact = new PDFFactory(super.getProperties());
+		        URI output = pdfFact.merge(request);
+		        
+		        if (output != null) {
+		            UrlGenerator urlFact = new UrlGenerator(super.getProperties());
+		            String url = urlFact.toURL(output);
+		            holder.setURL(url);
+		        }
+		        else {
+		            LOGGER.error("The output file returned by the PDFFactory "
+		                    + "object is null or empty.");
+		        	return Response.serverError().build();
+		        }
 	        }
-	        else {
-	            LOGGER.error("The output file returned by the PDFFactory "
-	                    + "object is null or empty.");
+	        catch (PropertiesNotLoadedException pnle) {
+	        	LOGGER.error("Unable to load the required properties file [ "
+	        			+ PROPERTY_FILE_NAME 
+	        			+ " ].  Exception message => [ "
+	        			+ pnle.getMessage());
 	        	return Response.serverError().build();
 	        }
         }
-        catch (PropertiesNotLoadedException pnle) {
-        	LOGGER.error("Unable to load the required properties file [ "
-        			+ PROPERTY_FILE_NAME 
-        			+ " ].  Exception message => [ "
-        			+ pnle.getMessage());
+        else {
+        	LOGGER.error("Unable to deserialize the inputPDF merge request.  "
+        			+ "The merge request was null.");
         	return Response.serverError().build();
         }
         return Response.ok(holder, MediaType.APPLICATION_JSON).build();
@@ -209,48 +217,55 @@ public class PDFMerge extends PropertyLoader implements PDFMergeI {
     public Response mergeAndDownload(MergeRequest request) 
             throws PDFException {
         
-        String method = "mergeAndDownload() - ";
-        
-        LOGGER.info(request.toString());
-        
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(method + "method invoked.");
+            LOGGER.debug("mergeAndDownload() invoked.");
         }
         
-        try {
-	        PDFFactory pdfFact = new PDFFactory(super.getProperties());
-	        URI output = pdfFact.merge(request);
+        if (request != null) {
 	        
-	        if (output != null) {
-	        	
-	            java.nio.file.Path p = Paths.get(output);
-	            // If the output file exists, start the download.
-	            if (Files.exists(p)) {
-	                return Response.ok(p)
-	                        .header("Content-Disposition", 
-	                                "attachment; filename=" + p.toString() + "\"")
-	                        .build();
-	            }
-	            else {
-	                LOGGER.error("The output file returned by the PDFFactory object "
-	                        + "does not exist.  File specified [ "
-	                        + output
-	                        + " ].");
-	                return Response.serverError().build();
-	            }
+        	LOGGER.info(request.toString());
+	        RequestArchiveService.getInstance().archiveRequest(request);
+        
+	        try {
+		        PDFFactory pdfFact = new PDFFactory(super.getProperties());
+		        URI output = pdfFact.merge(request);
+		        
+		        if (output != null) {
+		        	
+		            java.nio.file.Path p = Paths.get(output);
+		            // If the output file exists, start the download.
+		            if (Files.exists(p)) {
+		                return Response.ok(p)
+		                        .header("Content-Disposition", 
+		                                "attachment; filename=" + p.toString() + "\"")
+		                        .build();
+		            }
+		            else {
+		                LOGGER.error("The output file returned by the PDFFactory object "
+		                        + "does not exist.  File specified [ "
+		                        + output
+		                        + " ].");
+		                return Response.serverError().build();
+		            }
+		        }
+		        else {
+		            LOGGER.error("The output file returned by the PDFFactory "
+		                    + "object is null or empty.");
+		            return Response.serverError().build();
+		        }
 	        }
-	        else {
-	            LOGGER.error(method 
-	                    + "The output file returned by the PDFFactory object is "
-	                    + "null or empty.");
-	            return Response.serverError().build();
+	        catch (PropertiesNotLoadedException pnle) {
+	        	LOGGER.error("Unable to load the required properties file [ "
+	        			+ PROPERTY_FILE_NAME 
+	        			+ " ].  Exception message => [ "
+	        			+ pnle.getMessage()
+	        			+ " ].");
+	        	return Response.serverError().build();
 	        }
         }
-        catch (PropertiesNotLoadedException pnle) {
-        	LOGGER.error("Unable to load the required properties file [ "
-        			+ PROPERTY_FILE_NAME 
-        			+ " ].  Exception message => [ "
-        			+ pnle.getMessage());
+        else {
+        	LOGGER.error("Unable to deserialize the inputPDF merge request.  "
+        			+ "The merge request was null.");
         	return Response.serverError().build();
         }
     }

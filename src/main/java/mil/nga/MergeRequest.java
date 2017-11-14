@@ -14,14 +14,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * Simple Java bean used to hold the contents of a client-initiated merge
  * request.  This object utilizes JAX-B annotations and is used in conjunction
  * with a RESTful (JAX-RS) service call via POST.
- *  
- * Had some problems deploying this application to JBoss.  Though the Jersey
- * annotations (Xml*) should have been sufficient, JBoss would not 
- * interpret the input as JSON.  We added the the Jackson annotations to work
- * around the issue.
- * 
- * Had more issues deploying to Wildfly.  Had to change from org.codehaus to 
- * com.fasterxml.jackson.
  * 
  * @author L. Craig Carpenter
  */

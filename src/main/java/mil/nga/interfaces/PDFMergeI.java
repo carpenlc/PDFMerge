@@ -47,6 +47,13 @@ public interface PDFMergeI {
     public static final String BASE_URL_PROPERTY = "mergePDF.base_url";
     
     /**
+     * If this property is set, the bundler will serialize the input pdf merge 
+     * requests to disk (this is a debugging feature).
+     */
+    public static final String MERGE_REQUEST_DIRECTORY_PROP = 
+            "mergePDF.request_output_location";
+    
+    /**
      * System property identifying the target staging directory.  
      */
     public static final String STAGING_DIRECTORY_PROPERTY = 

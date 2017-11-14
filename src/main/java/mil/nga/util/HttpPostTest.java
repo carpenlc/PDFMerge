@@ -27,7 +27,7 @@ public class HttpPostTest {
      * NIPR test environment servers
      */
     public static String[] TARGET_URLs = {
-        "http://ndwqsngwlvapp01.arn.gov:9080/PDFMerge/rest/merge", 
+        "http://ndwqsngwlvapp01.arn.gov:9080/PDFMerge/rest/merge",
         "http://ndwdsegdlvgeo01.arn.gov:9080/PDFMerge/rest/merge",
         "http://ndwqsngwlvapp01.arn.gov:9080/PDFMerge/rest/mergeAndDownload"
     };
@@ -38,9 +38,8 @@ public class HttpPostTest {
         sb.append("{");
         sb.append("\"file_name\" : \"output_pdf_file.pdf\",");
         sb.append("\"files\" : [");
-        sb.append("\"/mnt/raster/cadrg/cdrgx5nand3134_19/jog.pdf\",");
-        sb.append("\"/mnt/raster/cadrg/cdrgx5nand3538_21/jog.pdf\",");
-        sb.append("\"/mnt/fbga/datasets/2016_01_07/supplements/IFR_BOOK_10DEC15.pdf\"");
+        sb.append("\"/mnt/fbga/datasets/2017_10_12/supplements/PAA_12OCT17.pdf\",");
+        sb.append("\"/mnt/fbga/datasets/2017_10_12/supplements/IFR_BOOK_12OCT17.pdf\"");
         sb.append("]");
         sb.append("}");
         return sb.toString();
