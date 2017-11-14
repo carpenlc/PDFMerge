@@ -59,11 +59,11 @@ public class PDFFactory extends FileGenerator {
         long       startTime = System.currentTimeMillis();
         
         if (pdfFile != null) {
-        	
-        	Path p = Paths.get(pdfFile);
             
-        	try (InputStream is = Files.newInputStream(p);
-            		PDDocument pdf = PDDocument.load(is)) {
+            Path p = Paths.get(pdfFile);
+            
+            try (InputStream is = Files.newInputStream(p);
+                    PDDocument pdf = PDDocument.load(is)) {
                 valid = true;
             }
             catch (IOException ioe) {
@@ -75,7 +75,7 @@ public class PDFFactory extends FileGenerator {
                         + " ].  Target file is not a valid PDF.");
             }
             
-        	if (LOG.isDebugEnabled()) {
+            if (LOG.isDebugEnabled()) {
                 LOG.debug("Validation of file [ "
                         + pdfFile.toString() 
                         + " ] completed in [ "
@@ -103,7 +103,7 @@ public class PDFFactory extends FileGenerator {
      */
     public URI merge (List<String> inputFiles, String outputFileName) 
             throws PDFException {
-    	
+        
         URI               output      = null;
         PDFMergerUtility  pmut        = new PDFMergerUtility();
         List<InputStream> pdfsToMerge = new ArrayList<InputStream>();
@@ -112,12 +112,12 @@ public class PDFFactory extends FileGenerator {
         if ((inputFiles != null) && (inputFiles.size() > 0)) {
             
             try {
-            	
+                
                 long validateStartTime = System.currentTimeMillis();
                 
                 // Ensure the client-supplied list of PDF files is valid.
                 for (String pdfFile : inputFiles) {
-                	URI uri = URIUtils.getInstance().getURI(pdfFile);
+                    URI uri = URIUtils.getInstance().getURI(pdfFile);
                     if (isValidPDF(uri)) {
                         pdfsToMerge.add(Files.newInputStream(Paths.get(uri)));
                     }
@@ -172,16 +172,16 @@ public class PDFFactory extends FileGenerator {
                 throw new PDFException (msg);
             }
             finally {
-            	// Not sure if the PDFMergerUtility closes the streams so 
-            	// manually close them here.
-            	if (os != null) {
-            		try { os.close(); } catch (Exception e) {}
-            	}
-            	if ((pdfsToMerge != null) && (pdfsToMerge.size() > 0)) {
-            		for (InputStream stream : pdfsToMerge) {
-            			try { stream.close(); } catch (Exception e) {}
-            		}
-            	}
+                // Not sure if the PDFMergerUtility closes the streams so 
+                // manually close them here.
+                if (os != null) {
+                    try { os.close(); } catch (Exception e) {}
+                }
+                if ((pdfsToMerge != null) && (pdfsToMerge.size() > 0)) {
+                    for (InputStream stream : pdfsToMerge) {
+                        try { stream.close(); } catch (Exception e) {}
+                    }
+                }
             }
         }
         else {

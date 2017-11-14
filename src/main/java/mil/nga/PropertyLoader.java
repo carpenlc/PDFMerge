@@ -77,16 +77,16 @@ public class PropertyLoader {
      * @return Associated <code>Properties</code> object.
      */
     private static Properties convertBundleToProperties(
-    		ResourceBundle bundle) {
+            ResourceBundle bundle) {
     
-    	Properties props = new Properties();
-    	
-    	Enumeration<String> keys = bundle.getKeys();
-    	while (keys.hasMoreElements()) {
-    		String key = keys.nextElement();
-    		properties.put(key, bundle.getString(key));
-    	}
-    	return props;
+        Properties props = new Properties();
+        
+        Enumeration<String> keys = bundle.getKeys();
+        while (keys.hasMoreElements()) {
+            String key = keys.nextElement();
+            properties.put(key, bundle.getString(key));
+        }
+        return props;
     }
     
     /**
@@ -100,35 +100,35 @@ public class PropertyLoader {
                 + getPropertyFileName()
                 + " ].");
         try (InputStream stream = 
-        		PropertyLoader.class
-        			.getClassLoader()
-        			.getResourceAsStream(getPropertyFileName())) {
-        	if (stream != null) {
-        		if (properties == null) {
-        			properties = new Properties();
-        		}
-        		properties.load(stream);
-        	}
-        	else {
-        		LOGGER.warn("Unable to load properties file [ "
-        				+ getPropertyFileName()
-        				+ " ] using the System class loader.  "
-        				+ "Trying ResourceBundle...");
-        		ResourceBundle bundle = ResourceBundle.getBundle(
-        				getPropertyFileName(),
-        				Locale.getDefault());
-        		if (bundle != null) {
-        			properties = convertBundleToProperties(bundle);
-        		}
-        		else {
-        			String msg = "Unable to establish an input stream to the "
-        					+ "target properties file [ "
-        					+ getPropertyFileName()
-        					+ " ].  Stream is null.";
-        			LOGGER.error(msg);
-        			throw new PropertiesNotLoadedException(msg);
-        		}
-        	}
+                PropertyLoader.class
+                    .getClassLoader()
+                    .getResourceAsStream(getPropertyFileName())) {
+            if (stream != null) {
+                if (properties == null) {
+                    properties = new Properties();
+                }
+                properties.load(stream);
+            }
+            else {
+                LOGGER.warn("Unable to load properties file [ "
+                        + getPropertyFileName()
+                        + " ] using the System class loader.  "
+                        + "Trying ResourceBundle...");
+                ResourceBundle bundle = ResourceBundle.getBundle(
+                        getPropertyFileName(),
+                        Locale.getDefault());
+                if (bundle != null) {
+                    properties = convertBundleToProperties(bundle);
+                }
+                else {
+                    String msg = "Unable to establish an input stream to the "
+                            + "target properties file [ "
+                            + getPropertyFileName()
+                            + " ].  Stream is null.";
+                    LOGGER.error(msg);
+                    throw new PropertiesNotLoadedException(msg);
+                }
+            }
         }
         catch (FileNotFoundException fnfe) {
             String msg = "Unexpected FileNotFoundException raised while "
@@ -154,12 +154,12 @@ public class PropertyLoader {
         }
         // Un-checked exception thrown by the ResourceBundle  
         catch (MissingResourceException mre) {
-        	String msg = "MissingResourceException raised while attempting "
-        			+ "to load the target properties file [ "
-        			+ getPropertyFileName()
-        			+ " ] as a ResourceBundle.  Exception message => [ "
-        			+ mre.getMessage()
-        			+ " ].";
+            String msg = "MissingResourceException raised while attempting "
+                    + "to load the target properties file [ "
+                    + getPropertyFileName()
+                    + " ] as a ResourceBundle.  Exception message => [ "
+                    + mre.getMessage()
+                    + " ].";
             LOGGER.error(msg);
             throw new PropertiesNotLoadedException(msg);
         }

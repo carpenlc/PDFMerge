@@ -23,7 +23,7 @@ public class MergeRequestSerializer {
      * Set up the LogBack system for use throughout the class
      */        
     private static final Logger LOGGER = LoggerFactory.getLogger(
-    		MergeRequestSerializer.class);
+            MergeRequestSerializer.class);
     
     /** 
      * DateFormat object used when serializing/deserializing dates.  This 

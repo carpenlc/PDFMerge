@@ -20,11 +20,11 @@ public class PDFExceptionHandler
         implements ExceptionMapper<PDFException>, Serializable {
 
     /**
-	 * Eclipse-generated serialVersionUID
-	 */
-	private static final long serialVersionUID = 176264663111977573L;
+     * Eclipse-generated serialVersionUID
+     */
+    private static final long serialVersionUID = 176264663111977573L;
 
-	/**
+    /**
      * Convert the Exception to a JAX-RS Response object to return to 
      * the caller.
      * 

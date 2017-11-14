@@ -30,7 +30,7 @@ import mil.nga.util.URIUtils;
 public class RequestArchiveService 
         extends PropertyLoader 
         implements PDFMergeI {
-	
+    
     /**
      * Set up the LogBack system for use throughout the class
      */        
@@ -83,10 +83,10 @@ public class RequestArchiveService
      * object.
      */
     public RequestArchiveService(Properties props) {
-    	if (props != null) {
-    		setOutputPath(props.getProperty(MERGE_REQUEST_DIRECTORY_PROP));
+        if (props != null) {
+            setOutputPath(props.getProperty(MERGE_REQUEST_DIRECTORY_PROP));
             checkOutputPath();
-    	}
+        }
     }
     
     /**
@@ -94,28 +94,28 @@ public class RequestArchiveService
      */
     private void checkOutputPath() {
 
-    	if (getOutputPath() != null) {
-    		Path p = Paths.get(getOutputPath());
-    		if (!Files.exists(p)) {
-    			try {
-    				Files.createDirectory(p);
-    			}
-    			catch (IOException ioe) {
-    				LOGGER.error("System property [ "
-    						+ MERGE_REQUEST_DIRECTORY_PROP
-    						+ " ] is set to directory [ "
-    						+ getOutputPath().toString()
-    						+ " ] but the directory does not exist and "
-    						+ "cannot be created.  Exception message => [ "
-    						+ ioe.getMessage()
-    						+ " ].");
-    				outputPath = null;
-    			}
-    		}
-    	}
-    	else {
-    		LOGGER.info("Request archive service is disabled.");
-    	}
+        if (getOutputPath() != null) {
+            Path p = Paths.get(getOutputPath());
+            if (!Files.exists(p)) {
+                try {
+                    Files.createDirectory(p);
+                }
+                catch (IOException ioe) {
+                    LOGGER.error("System property [ "
+                            + MERGE_REQUEST_DIRECTORY_PROP
+                            + " ] is set to directory [ "
+                            + getOutputPath().toString()
+                            + " ] but the directory does not exist and "
+                            + "cannot be created.  Exception message => [ "
+                            + ioe.getMessage()
+                            + " ].");
+                    outputPath = null;
+                }
+            }
+        }
+        else {
+            LOGGER.info("Request archive service is disabled.");
+        }
     }
     
     /**
@@ -144,16 +144,16 @@ public class RequestArchiveService
      */
     private URI getFilePath() {
         
-    	StringBuilder sb = new StringBuilder();
+        StringBuilder sb = new StringBuilder();
         
         if (getOutputPath() != null) {
-        	sb.append(getOutputPath().toString());
+            sb.append(getOutputPath().toString());
             if (!sb.toString().endsWith(File.separator)) {
                 sb.append(File.separator);
             }
         }
         else {
-        	LOGGER.warn("Output path is not defined!");
+            LOGGER.warn("Output path is not defined!");
         }
         sb.append(generateFilename());
         sb.append(EXTENSION);
@@ -178,7 +178,7 @@ public class RequestArchiveService
                         + " ].");
             Path p = Paths.get(outputFile);
             try (BufferedWriter writer = 
-            		Files.newBufferedWriter(p, Charset.forName("UTF-8"))) {
+                    Files.newBufferedWriter(p, Charset.forName("UTF-8"))) {
                 writer.write(request);
                 writer.flush();
             }
@@ -205,25 +205,25 @@ public class RequestArchiveService
      */
     public void archiveRequest(MergeRequest request) {
         if (getOutputPath() != null) {
-	        if (request != null) {
-	            
-	            if (LOGGER.isDebugEnabled()) {
-	                LOGGER.debug("Archiving incoming PDF merge request.");
-	            }
+            if (request != null) {
+                
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("Archiving incoming PDF merge request.");
+                }
                 String requestString = MergeRequestSerializer
-                				.getInstance()
-                				.serializePretty(request);
+                                .getInstance()
+                                .serializePretty(request);
                 saveToFile(requestString);
-	        }
-	        else {
-	            LOGGER.error("The input BundleRequest is null.  Unable to "
-	                    + "archive the incoming request information.");
-	        }
+            }
+            else {
+                LOGGER.error("The input BundleRequest is null.  Unable to "
+                        + "archive the incoming request information.");
+            }
         }
         else {
-        	if (LOGGER.isDebugEnabled()) {
-        		LOGGER.debug("PDF Merge request archive feature is disabled.");
-        	}
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("PDF Merge request archive feature is disabled.");
+            }
         }
     }
     
@@ -250,28 +250,28 @@ public class RequestArchiveService
      * @param dir Location for storing the output data.
      */
     private void setOutputPath(String dir) {
-    	if ((dir != null) && (!dir.isEmpty())) { 
-    		outputPath = URIUtils.getInstance().getURI(dir);
-    		if (outputPath != null) {
-    			LOGGER.info("Incoming requests will be archived to [ "
-    					+ outputPath.toString()
-    					+ " ].");
-    		}
-    		else {
-    			LOGGER.error("System property [ "
-    					+ MERGE_REQUEST_DIRECTORY_PROP 
-    					+ " ] is set to [ "
-    					+ dir 
-    					+ " ] which cannot be converted to a URI.  "
-    					+ "Incoming requests will not be archived.");
-    		}	
-    	}
-    	else {
-    		LOGGER.warn("Output path specified by system property [ "
-    				+ MERGE_REQUEST_DIRECTORY_PROP
-    				+ " ] is null or empty.  Request archive service "
-    				+ "is disabled.");
-    	}
+        if ((dir != null) && (!dir.isEmpty())) { 
+            outputPath = URIUtils.getInstance().getURI(dir);
+            if (outputPath != null) {
+                LOGGER.info("Incoming requests will be archived to [ "
+                        + outputPath.toString()
+                        + " ].");
+            }
+            else {
+                LOGGER.error("System property [ "
+                        + MERGE_REQUEST_DIRECTORY_PROP 
+                        + " ] is set to [ "
+                        + dir 
+                        + " ] which cannot be converted to a URI.  "
+                        + "Incoming requests will not be archived.");
+            }    
+        }
+        else {
+            LOGGER.warn("Output path specified by system property [ "
+                    + MERGE_REQUEST_DIRECTORY_PROP
+                    + " ] is null or empty.  Request archive service "
+                    + "is disabled.");
+        }
     }
     
     /** 

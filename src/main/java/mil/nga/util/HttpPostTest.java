@@ -27,7 +27,7 @@ public class HttpPostTest {
      * NIPR test environment servers
      */
     public static String[] TARGET_URLs = {
-        "http://ndwqsngwlvapp01.arn.gov:9080/PDFMerge/rest/merge",
+        "http://ndwqsngwlvapp01.arn.gov:8080/PDFMerge/rest/merge",
         "http://ndwdsegdlvgeo01.arn.gov:9080/PDFMerge/rest/merge",
         "http://ndwqsngwlvapp01.arn.gov:9080/PDFMerge/rest/mergeAndDownload"
     };

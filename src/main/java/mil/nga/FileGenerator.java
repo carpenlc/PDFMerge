@@ -150,7 +150,7 @@ public class FileGenerator implements PDFMergeI {
      * @return The default output file name.
      */
     public String getDefaultOutputFile() {
-    	return defaultOutputFile;
+        return defaultOutputFile;
     }
     
     /**
@@ -170,12 +170,12 @@ public class FileGenerator implements PDFMergeI {
      */
     public void setStagingArea(String value) {
         if ((value == null) || (value.isEmpty())) {
-        	stagingArea = 
-            		URIUtils.getInstance().getURI(
-            				System.getProperty("java.io.tmpdir"));
+            stagingArea = 
+                    URIUtils.getInstance().getURI(
+                            System.getProperty("java.io.tmpdir"));
         }
         else {
-        	stagingArea = URIUtils.getInstance().getURI(value);
+            stagingArea = URIUtils.getInstance().getURI(value);
         }
     }
     

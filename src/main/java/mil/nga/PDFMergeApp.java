@@ -18,12 +18,12 @@ import javax.ws.rs.core.Application;
 @ApplicationPath("/bundler")
 public class PDFMergeApp extends Application {
 
-	/**
-	 * Overridden method used to provide a list of JAX-RS classes.
-	 */
-	@Override
-	public Set<Class<?>> getClasses() {
-		return new HashSet<Class<?>>(Arrays.asList(PDFMerge.class));
-	}
-	
+    /**
+     * Overridden method used to provide a list of JAX-RS classes.
+     */
+    @Override
+    public Set<Class<?>> getClasses() {
+        return new HashSet<Class<?>>(Arrays.asList(PDFMerge.class));
+    }
+    
 }
