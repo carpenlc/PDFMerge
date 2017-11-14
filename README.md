@@ -12,15 +12,13 @@ Simple web service used to merge a list of PDF files together. The exposed endpo
 }
 ```
 ## REST Endpoints
-Two seperate end-points are provided:
+Two separate end-points are provided:
 * **/PDFMerge/rest/merge** endpoint: The code will them merge together the identified files and return a JSON message with a URL link to the output file.  The return message would look like the following:
 ```
 { "url" : "https://localhost/path/to/output_file.pdf" }
 ```
 * **/PDFMerge/rest/mergeAndDownload** endpoint:  The code will them merge together the identified files and return the output file as an attachment.   
-```
-/PDFMerge/rest/mergeAndDownload
-```
+
 ## Download and Build the Source
 * Minimum requirements:
     * Java Development Kit (v1.8.0 or higher)
