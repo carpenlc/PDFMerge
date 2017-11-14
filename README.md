@@ -1,9 +1,24 @@
 # PDFMerge
-Simple web service used to merge PDF files together.  
-
-Two seperate end-points are provided:
+Simple web service used to merge a list of PDF files together. The exposed endpoints accept POST requests with a JSON message body in the following format:
 ```
-/PDFMerge/rest/merge
+{
+    "file_name" : "output_file.pdf",
+    "files" : [
+        "/local/path/to/file1.pdf",
+        "/local/path/to/file2.pdf"
+        ...
+        "/local/path/to/fileN.pdf"
+    ]
+}
+```
+## REST Endpoints
+Two seperate end-points are provided:
+* **/PDFMerge/rest/merge** endpoint: The code will them merge together the identified files and return a JSON message with a URL link to the output file.  The return message would look like the following:
+```
+{ "url" : "https://localhost/path/to/output_file.pdf" }
+```
+* **/PDFMerge/rest/mergeAndDownload** endpoint:  The code will them merge together the identified files and return the output file as an attachment.   
+```
 /PDFMerge/rest/mergeAndDownload
 ```
 ## Download and Build the Source
