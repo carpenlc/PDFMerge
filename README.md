@@ -11,6 +11,18 @@ Simple web service used to merge a list of PDF files together. The exposed endpo
     ]
 }
 ```
+The PDFMerge utility is also capable of merging data that exists on an S3 filesystem.  In order to leverage S3 the input list of files should specify target files using URI syntax.  Example:
+```
+{
+    "file_name" : "output_file.pdf",
+    "files" : [
+        "s3:///local/path/to/file1.pdf",
+        "file:///local/path/to/file2.pdf"
+        ...
+        "s3:///local/path/to/fileN.pdf"
+    ]
+}
+```
 ## REST Endpoints
 Two separate end-points are provided:
 * **/PDFMerge/rest/merge** endpoint: The code will them merge together the identified files and return a JSON message with a URL link to the output file.  The return message would look like the following:
