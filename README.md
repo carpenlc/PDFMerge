@@ -55,6 +55,10 @@ Execute the following Maven command to build the output WAR file.
 ```
 # mvn clean package
 ```
+## Build the Application with all Reporting Enabled
+```
+# mvn clean package checkstyle:checkstyle pmd:pmd findbugs:findbugs
+```
 Deployable WAR file will reside at:
 ```
 ~/PDFMerge/target/PDFMerge.war
