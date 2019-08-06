@@ -24,10 +24,10 @@
         <maven.compiler.target>1.8</maven.compiler.target>
         <maven-javadoc-plugin.version>2.10.4</maven-javadoc-plugin.version>
         <tomcat.servlet.version>8.0.47</tomcat.servlet.version>
-        <pdfbox.version>2.0.12</pdfbox.version>
-        <fontbox.version>2.0.12</fontbox.version>
-        <pdfbox-app.version>2.0.12</pdfbox-app.version>
-        <pdfbox-tools.version>2.0.12</pdfbox-tools.version>
+        <pdfbox.version>2.0.15</pdfbox.version>
+        <fontbox.version>2.0.15</fontbox.version>
+        <pdfbox-app.version>2.0.15</pdfbox-app.version>
+        <pdfbox-tools.version>2.0.15</pdfbox-tools.version>
         <commons-logging.version>1.2</commons-logging.version>
         <slf4j.version>1.7.25</slf4j.version>
         <logback.version>1.2.2</logback.version>
