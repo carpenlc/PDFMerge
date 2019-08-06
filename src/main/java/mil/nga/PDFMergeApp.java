@@ -15,7 +15,7 @@ import javax.ws.rs.core.Application;
  * 
  * @author L. Craig Carpenter
  */
-@ApplicationPath("/bundler")
+@ApplicationPath("/PDFMerge")
 public class PDFMergeApp extends Application {
 
     /**
