@@ -34,9 +34,9 @@
         <resteasy.version>3.1.4.Final</resteasy.version>
         <resteasy.initializer.version>3.1.4.Final</resteasy.initializer.version>
         <resteasy.jackson2.version>3.1.4.Final</resteasy.jackson2.version>
-        <jackson.version>2.9.9.2</jackson.version>
+        <jackson.version>2.10.0</jackson.version>
         <guava.version>19.0</guava.version>
-        <tika.version>2.0.15</tika.version>
+        <tika.version>1.22</tika.version>
         <junit.version>4.12</junit.version>
         <s3fs.version>1.5.3</s3fs.version>
     </properties>
