@@ -1,8 +1,10 @@
 package mil.nga.util;
 
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLEncoder;
 import java.nio.file.FileSystemNotFoundException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -71,25 +73,67 @@ public class URIUtils implements Serializable {
      * @return Associated URI to the same target file.  May be null.
      */
     public URI getURI(String filePath) throws FileSystemNotFoundException {
-        URI uri = null;
-        
-        // TODO : Remove
-        LOGGER.info("Converting [ " + filePath + " ] to URI.");
-        
-        if ((filePath != null) && (!filePath.isEmpty())) {
-            // Create the URI from the input file path. 
-            uri = URI.create(filePath);
-            
-            // For backwards compatibility, if the scheme is not supplied, we 
-            // make the assumption that it is on the default file system.
-            if ((uri.getScheme() == null) || (uri.getScheme().isEmpty())) {
-                uri = getFileURI(uri);
-            }
-        }
-        else {
-            LOGGER.warn("Input filePath is null or not defined.  Returned "
-                    + "URI will be null.");
-        }
+    	
+    	URI uri = null;
+    	
+    	if ((filePath != null) && (!filePath.isEmpty())) { 
+    		
+	    	try {
+	    		
+	    		// If the input URI contains spaces, encode it.  This was 
+	    		// added to support Windows-based paths associated with the 
+	    		// aeronautical mission.  This only works for local file 
+	    		// paths.
+	    		if (filePath.contains(" ")) {
+	    			// Do not encode if the incoming URL is s3.  The 
+	    			// URI.create() method is unable to pick out the scheme
+	    			// if the URI is encoded.
+	    			if (filePath.startsWith("s3")) {
+	    				filePath = filePath.replaceAll("\\ ", "+");
+	    			}
+	    			else {
+	    				filePath = URLEncoder
+	    						.encode(filePath, "UTF-8")
+	    						.replaceAll("\\+", "%20");
+	    			}
+	    		}
+		    				
+	    		// For large jobs, this message creates too much disk IO
+		    	// if (LOGGER.isDebugEnabled()) {
+		    	//	  LOGGER.debug("Converting path [ " + filePath + " ] to URI.");
+		    	// }
+		    	
+		        if ((filePath != null) && (!filePath.isEmpty())) {
+		        	
+		        	// Create the URI from the input file path. 
+		        	//uri = new URI(encoded);
+		            uri = URI.create(filePath);
+		            
+		            // For backwards compatibility, if the scheme is not supplied, we 
+		            // make the assumption that it is on the default file system.
+		            if ((uri.getScheme() == null) || (uri.getScheme().isEmpty())) {
+		                uri = getFileURI(uri);
+		            }
+		        }
+		        else {
+		            LOGGER.warn("Input filePath is null or not defined.  Returned "
+		                    + "URI will be null.");
+		        }
+	    	}
+	        catch (UnsupportedEncodingException use) {
+	        	LOGGER.error("Unexpected UnsupportedEncodingException "
+	        			+ "encountered while encoding URI [ "
+	        			+ filePath
+	        			+ " ].  This should never happen because the "
+	        			+ "encoding type is hardcoded.  Error => [ "
+	        			+ use.getMessage()
+	        			+ " ].");
+	        }
+    	}
+    	else {
+    		LOGGER.warn("The input file path is null or not populated.  The "
+    				+ "output URI will also be null.");
+    	}
         return uri;
     }
     
