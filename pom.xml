@@ -37,7 +37,7 @@
         <jackson.version>2.10.0</jackson.version>
         <guava.version>19.0</guava.version>
         <tika.version>1.22</tika.version>
-        <junit.version>4.12</junit.version>
+        <junit.version>4.13.1</junit.version>
         <s3fs.version>1.5.3</s3fs.version>
     </properties>
 
