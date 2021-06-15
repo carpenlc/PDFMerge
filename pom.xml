@@ -24,7 +24,7 @@
         <maven.compiler.target>1.8</maven.compiler.target>
         <maven-javadoc-plugin.version>2.10.4</maven-javadoc-plugin.version>
         <tomcat.servlet.version>8.0.47</tomcat.servlet.version>
-        <pdfbox.version>2.0.15</pdfbox.version>
+        <pdfbox.version>2.0.24</pdfbox.version>
         <fontbox.version>2.0.15</fontbox.version>
         <pdfbox-app.version>2.0.15</pdfbox-app.version>
         <pdfbox-tools.version>2.0.15</pdfbox-tools.version>
